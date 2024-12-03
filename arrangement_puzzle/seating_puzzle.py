@@ -134,7 +134,20 @@ names_list = {
 
 
 class NameColorMapping:
+    """
+    A class to manage the mapping of labels to names and colors for a seating puzzle.
+
+    Attributes:
+        people_mapping (dict): Maps labels (e.g., 'A') to randomly selected names.
+        color_mapping (dict): Maps numeric indices to randomly selected colors.
+    """
     def __init__(self, n):
+        """
+        Initializes a NameColorMapping object with `n` unique people and colors.
+
+        Args:
+            n (int): Number of people and colors to map.
+        """
         # Create local copies of the global lists to avoid modifying them
         local_names_list = {key: names[:] for key, names in names_list.items()}  # Copy names_list dictionary
         local_colors_list = colors_list[:]  # Copy colors_list
@@ -144,6 +157,12 @@ class NameColorMapping:
         self.color_mapping = {i + 1: local_colors_list.pop(random.randint(0, len(local_colors_list) - 1)) for i in range(n)}
 
     def __str__(self):
+        """
+        Returns a string representation of the mappings.
+
+        Returns:
+            str: A description of people and their associated colors.
+        """
         people = ', '.join(list(self.people_mapping.values())[:-1]) + ' and ' + list(self.people_mapping.values())[-1]
         colors = ', '.join(list(self.color_mapping.values())[:-1]) + ' and ' + list(self.color_mapping.values())[-1]
         return f"{people} are sitting in a row on {len(self.people_mapping)} chairs. They are wearing shirts with colors {colors}. Each of them is wearing a different color."
@@ -173,13 +192,37 @@ def get_position_names(num_people):
 
 
 class Arrangement:
+    """
+    A class to represent the arrangement of people and colors in a seating puzzle.
+
+    Attributes:
+        people (list): A list of people represented by labels.
+        colors (list): A list of unique colors represented by numeric indices.
+        mapping (dict): A dictionary mapping people to colors.
+        name_color_mapping (NameColorMapping): An object containing the name-to-label and color mappings.
+    """
+
     def __init__(self, people, colors, mapping):
+        """
+        Initializes an Arrangement object.
+
+        Args:
+            people (list): A list of people represented by labels.
+            colors (list): A list of unique colors represented by numeric indices.
+            mapping (NameColorMapping): An object containing mappings for names and colors.
+        """
         self.people = people  # List of people represented by labels
         self.colors = colors  # List of unique colors represented by numbers
         self.mapping = {p: c for p, c in zip(people, colors)}  # Map people to colors
         self.name_color_mapping = mapping  # Map labels to actual names and colors
 
     def __str__(self):
+        """
+        Returns a string representation of the arrangement.
+
+        Returns:
+            str: A description of the arrangement, including names, colors, and positions.
+        """
         position_names = get_position_names(len(self.people))
         output = []
         for person_label, position_name in zip(self.people, position_names):
@@ -259,7 +302,32 @@ def format_reference(reference, mapping):
     return mapping.people_mapping[reference]
 
 class Clue:
+    """
+    A class to represent a single clue in the seating puzzle.
+
+    Attributes:
+        clue_type (str): The type of clue (e.g., "wearing", "immediate_left", "left_of").
+        property_x: The primary reference property in the clue (e.g., a person or color).
+        property_y: The secondary reference property (if applicable).
+        property_z: The tertiary reference property (if applicable).
+        color (int): A color index referenced in the clue (if applicable).
+        negation (bool): Whether the clue is negated.
+        name_color_mapping (NameColorMapping): An object containing mappings for names and colors.
+    """
+
     def __init__(self, clue_type, property_x, property_y=None, property_z=None, color=None, negation=False, mapping=None):
+        """
+        Initializes a Clue object.
+
+        Args:
+            clue_type (str): The type of clue.
+            property_x: The primary reference property in the clue.
+            property_y: The secondary reference property (if applicable).
+            property_z: The tertiary reference property (if applicable).
+            color (int): A color index referenced in the clue (if applicable).
+            negation (bool): Whether the clue is negated.
+            mapping (NameColorMapping): An object containing mappings for names and colors.
+        """
         self.clue_type = clue_type  # Type of clue (e.g., "wearing", "immediate_left", "left_of", "between", "far_left", "end")
         self.property_x = property_x
         self.property_y = property_y
@@ -269,6 +337,12 @@ class Clue:
         self.name_color_mapping = mapping
 
     def __str__(self):
+        """
+        Returns a string representation of the clue.
+
+        Returns:
+            str: A description of the clue.
+        """
         def person_or_color(reference):
             return format_reference(reference, self.name_color_mapping)
 
@@ -294,6 +368,15 @@ class Clue:
         return description[0].upper() + description[1:]
 
     def is_consistent(self, arrangement):
+        """
+        Checks if the clue is consistent with a given arrangement.
+
+        Args:
+            arrangement (Arrangement): The arrangement to check against.
+
+        Returns:
+            bool: True if the clue is consistent, False otherwise.
+        """
         try:
             person_x = self.property_x if isinstance(self.property_x, str) else [p for p, c in arrangement.mapping.items() if c == self.property_x][0]
             person_y = self.property_y if isinstance(self.property_y, str) else [p for p, c in arrangement.mapping.items() if c == self.property_y][0] if self.property_y else None
