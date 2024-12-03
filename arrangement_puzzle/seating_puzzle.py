@@ -4,6 +4,18 @@ import json
 import re
 
 def save_puzzle_to_disk(clues, arrangement, namecolormapping, file_name="puzzle.json"):
+    """
+    Saves the puzzle configuration to a JSON file on disk.
+
+    Args:
+        clues (list): A list of Clue objects defining the puzzle's rules.
+        arrangement (Arrangement): The current arrangement of people and colors.
+        namecolormapping (NameColorMapping): The mapping of labels to names and colors.
+        file_name (str): The name of the file to save the puzzle. Defaults to "puzzle.json".
+
+    Returns:
+        None
+    """
     # Prepare the data for serialization
     data = {
         "clues": [
@@ -32,6 +44,15 @@ def save_puzzle_to_disk(clues, arrangement, namecolormapping, file_name="puzzle.
         json.dump(data, f, indent=4)
 
 def load_puzzle_from_disk(file_name="puzzle.json"):
+    """
+    Loads the puzzle configuration from a JSON file on disk.
+
+    Args:
+        file_name (str): The name of the file to load the puzzle from. Defaults to "puzzle.json".
+
+    Returns:
+        tuple: A tuple containing the list of Clue objects, Arrangement, and NameColorMapping.
+    """
     # Helper function to cast entries to int if they represent an integer
     def try_cast_int(value):
         try:
@@ -127,16 +148,46 @@ class NameColorMapping:
         colors = ', '.join(list(self.color_mapping.values())[:-1]) + ' and ' + list(self.color_mapping.values())[-1]
         return f"{people} are sitting in a row on {len(self.people_mapping)} chairs. They are wearing shirts with colors {colors}. Each of them is wearing a different color."
 
+def get_position_names(num_people):
+    """
+    Returns a list of position names based on the number of people.
+
+    Args:
+        num_people (int): The number of people in the arrangement.
+
+    Returns:
+        list: A list of position names.
+    """
+    if num_people == 2:
+        return ['left', 'right']
+    elif num_people == 3:
+        return ['left', 'middle', 'right']
+    elif num_people == 4:
+        return ['far left', 'middle left', 'middle right', 'far right']
+    elif num_people == 5:
+        return ['far left', 'left', 'middle', 'right', 'far right']
+    elif num_people == 6:
+        return ['far left', 'just left of center', 'left of center', 'right of center', 'just right of center', 'far right']
+    else:
+        raise ValueError("Unsupported number of people")
+
 
 class Arrangement:
     def __init__(self, people, colors, mapping):
-        self.people = people  # List of people represented by letters
+        self.people = people  # List of people represented by labels
         self.colors = colors  # List of unique colors represented by numbers
         self.mapping = {p: c for p, c in zip(people, colors)}  # Map people to colors
-        self.name_color_mapping = mapping
+        self.name_color_mapping = mapping  # Map labels to actual names and colors
 
     def __str__(self):
-        return ', '.join([f'{self.name_color_mapping.people_mapping[p]} (Color {self.name_color_mapping.color_mapping[self.mapping[p]]})' for p in self.people])
+        position_names = get_position_names(len(self.people))
+        output = []
+        for person_label, position_name in zip(self.people, position_names):
+            person_name = self.name_color_mapping.people_mapping[person_label]
+            color_name = self.name_color_mapping.color_mapping[self.mapping[person_label]]
+            output.append(f'{person_name} (Color {color_name}, position {position_name})')
+        return ', '.join(output)
+
 
 
 def parse_arrangement(arrangement_str, name_color_mapping):
@@ -153,7 +204,7 @@ def parse_arrangement(arrangement_str, name_color_mapping):
     # Remove extra whitespace
     arrangement_str = arrangement_str.strip()
 
-    # Updated regex pattern to capture color names instead of numbers
+    # regex pattern to capture color names instead of numbers
     pattern = r'(\w+) \(Color (\w+)\)'
     matches = re.findall(pattern, arrangement_str)
 
@@ -188,16 +239,21 @@ def parse_arrangement(arrangement_str, name_color_mapping):
             print(f"Color '{color_name}' not found in color_mapping.")
             return None
         
-    # Optional: Check if the number of detected people matches the expected number
-    # if len(people) != len(name_color_mapping.people_mapping):
-    #     print("Number of people does not match the expected count.")
-    #     return None
-
     # Create and return the Arrangement
     return Arrangement(people, colors, name_color_mapping)
 
 
 def format_reference(reference, mapping):
+    """
+    Formats a reference to a person or color based on the mapping.
+
+    Args:
+        reference (int or str): A reference to a person or color.
+        mapping (NameColorMapping): The mapping object to interpret references.
+
+    Returns:
+        str: A formatted string representation of the reference.
+    """
     if isinstance(reference, int):
         return f"the person wearing {mapping.color_mapping[reference]}"
     return mapping.people_mapping[reference]
@@ -281,12 +337,32 @@ class Clue:
 
 
 def generate_random_arrangement(n, mapping):
+    """
+    Generates a random arrangement of people and colors.
+
+    Args:
+        n (int): The number of people and colors.
+        mapping (NameColorMapping): The mapping of names and colors.
+
+    Returns:
+        Arrangement: A randomly generated arrangement.
+    """
     people = random.sample([chr(ord('A') + i) for i in range(n)], n)
     colors = random.sample(range(1, n + 1), n)
     arrangement = Arrangement(people, colors, mapping)
     return arrangement
 
 def generate_all_arrangements(n, mapping):
+    """
+    Generates all possible arrangements of people and colors.
+
+    Args:
+        n (int): The number of people and colors.
+        mapping (NameColorMapping): The mapping of names and colors.
+
+    Yields:
+        Arrangement: Each possible arrangement.
+    """
     people_permutations = itertools.permutations([chr(ord('A') + i) for i in range(n)])
     for people in people_permutations:
         color_permutations = itertools.permutations(range(1, n + 1))
@@ -295,14 +371,45 @@ def generate_all_arrangements(n, mapping):
             yield arrangement
 
 def is_valid_arrangement(arrangement, clues):
+    """
+    Checks if an arrangement satisfies all given clues.
+
+    Args:
+        arrangement (Arrangement): The arrangement to validate.
+        clues (list): A list of Clue objects defining the puzzle's rules.
+
+    Returns:
+        bool: True if the arrangement is valid, False otherwise.
+    """
     result = all(clue.is_consistent(arrangement) for clue in clues)
     return result
 
 def generate_consistent_arrangements(clues, n, mapping):
+    """
+    Generates all arrangements that are consistent with the given clues.
+
+    Args:
+        clues (list): A list of Clue objects.
+        n (int): The number of people and colors.
+        mapping (NameColorMapping): The mapping of names and colors.
+
+    Returns:
+        list: A list of consistent arrangements.
+    """
     consistent_arrangements = [arr for arr in generate_all_arrangements(n, mapping) if is_valid_arrangement(arr, clues)]
     return consistent_arrangements
 
 def generate_clues(n, mapping):
+    """
+    Generates clues to create a puzzle with a unique solution.
+
+    Args:
+        n (int): The number of people and colors.
+        mapping (NameColorMapping): The mapping of names and colors.
+
+    Returns:
+        list: A list of Clue objects.
+    """
     def random_property():
         return random.choice([chr(ord('A') + i) for i in range(n)] + list(range(1, n + 1)))
 
@@ -333,6 +440,15 @@ def generate_clues(n, mapping):
     return clues
 
 def filter_duplicate_clues(clues):
+    """
+    Filters out duplicate clues from a list of clues.
+
+    Args:
+        clues (list): A list of Clue objects.
+
+    Returns:
+        list: A list of unique clues.
+    """
     unique_clues = []
     for clue in clues:
         if clue not in unique_clues:
@@ -340,6 +456,17 @@ def filter_duplicate_clues(clues):
     return unique_clues
 
 def filter_unnecessary_clues(clues, n, mapping):
+    """
+    Filters out unnecessary clues that do not contribute to a unique solution.
+
+    Args:
+        clues (list): A list of Clue objects.
+        n (int): The number of people and colors.
+        mapping (NameColorMapping): The mapping of names and colors.
+
+    Returns:
+        list: A list of necessary clues.
+    """
     filtered_clues = clues[:]
     for clue in clues:
         temp_clues = filtered_clues[:]

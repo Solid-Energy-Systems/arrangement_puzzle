@@ -2,6 +2,19 @@ from arrangement_puzzle.seating_puzzle import *
 from tqdm import tqdm
 
 def initialize_possibilities(n, mapping):
+    """
+    Initializes the possible positions, people, and colors for the puzzle to the set of all possible values.
+
+    Args:
+        n (int): The number of people/colors.
+        mapping (NameColorMapping): A mapping of names to labels and colors.
+
+    Returns:
+        tuple: Three dictionaries representing possible positions for:
+            - positions_possibilities: Dict of positions and possible people/colors.
+            - people_possibilities: Dict of people and their possible positions/colors.
+            - colors_possibilities: Dict of colors and their possible positions/people.
+    """
     # Initialize possibilities for each position
     positions_possibilities = {}
     for pos in range(n):
@@ -28,6 +41,20 @@ def initialize_possibilities(n, mapping):
 
 
 def apply_wearing_clue(clue, positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping):
+    """
+    Applies a 'wearing' clue to update possibilities based on the clue.
+
+    Args:
+        clue (Clue): The clue object to apply.
+        positions_possibilities (dict): Possible positions for each person and color.
+        people_possibilities (dict): Possible positions/colors for each person.
+        colors_possibilities (dict): Possible positions/people for each color.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        bool: True if the possibilities were modified, False otherwise.
+    """
     person = clue.property_x
     color = clue.color
     modified = False  # Initialize modified to False
@@ -64,7 +91,15 @@ def apply_wearing_clue(clue, positions_possibilities, people_possibilities, colo
 
 def negate_invalid_pairs(invalid_pairs, x_positions, y_positions):
     """
-    Remove invalid pairs from x_positions and y_positions, for negation clues.
+    Removes invalid pairs of positions for negation clues.
+
+    Args:
+        invalid_pairs (set): Set of invalid (x, y) pairs.
+        x_positions (set): Possible x positions.
+        y_positions (set): Possible y positions.
+
+    Returns:
+        list: Valid pairs of (x, y) positions.
     """
     valid_pairs = []
 
@@ -77,7 +112,16 @@ def negate_invalid_pairs(invalid_pairs, x_positions, y_positions):
 
 def negate_invalid_triples(invalid_triples, x_positions, y_positions, z_positions):
     """
-    Remove invalid triples from x_positions, y_positions, and z_positions, for negation clues.
+    Removes invalid triples of positions for negation clues.
+
+    Args:
+        invalid_triples (set): Set of invalid (x, y, z) triples.
+        x_positions (set): Possible x positions.
+        y_positions (set): Possible y positions.
+        z_positions (set): Possible z positions.
+
+    Returns:
+        list: Valid triples of (x, y, z) positions.
     """
     valid_triples = []
 
@@ -91,7 +135,17 @@ def negate_invalid_triples(invalid_triples, x_positions, y_positions, z_position
 
 def can_be_equal(property_x, property_y, people_possibilities, reasoning_chain, mapping):
     """
-    Checks whether property_x and property_y can correspond to the same person.
+    Determines whether two properties (person or color) can be the same.
+
+    Args:
+        property_x (int or str): The first property (person or color).
+        property_y (int or str): The second property (person or color).
+        people_possibilities (dict): Possibilities for each person.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        bool: True if the properties can be the same, False otherwise.
     """
     if isinstance(property_x, int) and isinstance(property_y, int) and property_x != property_y:
         return False
@@ -111,6 +165,20 @@ def can_be_equal(property_x, property_y, people_possibilities, reasoning_chain, 
         return False
 
 def apply_position_clue(clue, positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping):
+    """
+    Applies a position-related clue to update possibilities.
+
+    Args:
+        clue (Clue): The clue object to apply.
+        positions_possibilities (dict): Possible positions for each person and color.
+        people_possibilities (dict): Possible positions/colors for each person.
+        colors_possibilities (dict): Possible positions/people for each color.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        bool: True if the possibilities were modified, False otherwise.
+    """
     n = len(positions_possibilities)
 
     def get_possible_positions(entity):
@@ -273,9 +341,32 @@ def apply_position_clue(clue, positions_possibilities, people_possibilities, col
     return changed
 
 def capitalize_first_letter(str):
+    """
+    Capitalizes the first letter of a string.
+
+    Args:
+        string (str): The input string.
+
+    Returns:
+        str: The string with the first letter capitalized.
+    """
     return str[0].upper() + str[1:]
 
 def apply_end_clue(clue, positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping):
+    """
+    Applies a clue related to an entity being at the far left, far right, or an end.
+
+    Args:
+        clue (Clue): The clue object to apply.
+        positions_possibilities (dict): Possible positions for each person and color.
+        people_possibilities (dict): Possible positions/colors for each person.
+        colors_possibilities (dict): Possible positions/people for each color.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        bool: True if the possibilities were modified, False otherwise.
+    """
     n = len(positions_possibilities)
     pos_far_left = 0
     pos_far_right = n - 1
@@ -323,7 +414,14 @@ def apply_end_clue(clue, positions_possibilities, people_possibilities, colors_p
 
 def set_to_str(substring, s):
     """
-    Convert a set to a string. Joins the set with , characters if it has size > 1 and puts an `or` before the last entry in that case. Additionally, appends "one of " if the set has size > 1.
+    Converts a set to a human-readable string format.
+
+    Args:
+        substring (str): Prefix to describe the type of set.
+        s (set): The set to convert.
+
+    Returns:
+        str: A formatted string representation of the set.
     """
     if len(s) == 0:
         return "none of the {substring}"
@@ -333,15 +431,21 @@ def set_to_str(substring, s):
         return f"one of {substring}{'s ' if substring else ''}{', '.join(str(x) for x in sorted(s)[:-1])} or {sorted(s)[-1]}" 
 
 def propagate_constraints(positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping):
+    """
+    Propagates constraints to reduce possibilities based on existing reasoning.
+
+    Args:
+        positions_possibilities (dict): Possible positions for each person and color.
+        people_possibilities (dict): Possible positions/colors for each person.
+        colors_possibilities (dict): Possible positions/people for each color.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        None
+    """
     changed = True
     while changed:
-        # reasoning_chain = []
-        # print current possibilities
-        # reasoning_chain.append("Propagating constraints...")
-        # reasoning_chain.append(f"Positions possibiilities: {positions_possibilities}")
-        # reasoning_chain.append(f"People possibiilities: {people_possibilities}")
-        # reasoning_chain.append(f"Colors possibiilities: {colors_possibilities}")
-
         changed = False
         # For each position
         for pos in positions_possibilities:
@@ -512,11 +616,21 @@ def propagate_constraints(positions_possibilities, people_possibilities, colors_
                             reasoning_chain.append(f"{mapping.color_mapping[other_color].capitalize()} must be worn by {mapping.people_mapping[next(iter(colors_possibilities[other_color]['people']))]} because it's the only person left.")
                             people_possibilities[next(iter(colors_possibilities[other_color]['people']))]['colors'] = {other_color}
 
-
-        # print(reasoning_chain)
-
-
 def apply_clue(clue, positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping):
+    """
+    Applies a generic clue to update possibilities.
+
+    Args:
+        clue (Clue): The clue object to apply.
+        positions_possibilities (dict): Possible positions for each person and color.
+        people_possibilities (dict): Possible positions/colors for each person.
+        colors_possibilities (dict): Possible positions/people for each color.
+        reasoning_chain (list): Logs of reasoning steps.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        bool: True if the possibilities were modified, False otherwise.
+    """
     modified = False
     if clue.clue_type == "wearing":
         modified = apply_wearing_clue(clue, positions_possibilities, people_possibilities, colors_possibilities, reasoning_chain, mapping)
@@ -531,6 +645,17 @@ def apply_clue(clue, positions_possibilities, people_possibilities, colors_possi
 
 
 def solve_puzzle(clues, n, mapping):
+    """
+    Solves the puzzle based on the provided clues.
+
+    Args:
+        clues (list): List of Clue objects.
+        n (int): The number of people/colors.
+        mapping (NameColorMapping): Mapping of names and colors.
+
+    Returns:
+        tuple: A reasoning chain (list) and the final arrangement (Arrangement).
+    """
     positions_possibilities, people_possibilities, colors_possibilities = initialize_possibilities(n, mapping)
     reasoning_chain = []
 
