@@ -1,7 +1,55 @@
 import re
-from arrangement_puzzle.seating_puzzle import Arrangement, NameColorMapping, get_position_names
 
-def analyze_llm_output(input_string, correct_arrangement, name_color_mapping, tokenizer):
+from arrangement_puzzle.seating_puzzle import get_position_names, Arrangement, NameColorMapping
+
+
+def normalize_arrangement(arrangement_str):
+    """
+    Normalize the arrangement string by removing whitespace and converting to lowercase.
+    """
+    return re.sub(r'\s+', '', arrangement_str).lower()
+
+def extract_final_arrangement(decoded_output, target_occurrence=4):
+    """
+    Extract the line immediately following the specified occurrence of "Final Arrangement:".
+    
+    Args:
+        decoded_output (str): The complete output from the model.
+        target_occurrence (int): The occurrence of "Final Arrangement:" to target.
+        
+    Returns:
+        str or None: The extracted arrangement string if found; otherwise, None.
+    """
+    # Find all start indices of "Final Arrangement:"
+    pattern = r'Final Arrangement:'
+    matches = list(re.finditer(pattern, decoded_output))
+    
+    if len(matches) < target_occurrence:
+        # Not enough occurrences found
+        return None
+    
+    # Get the start index of the target occurrence
+    target_match = matches[target_occurrence - 1]  # Zero-based indexing
+    start_index = target_match.end()
+    
+    # Extract the substring starting from the end of the target match
+    substring = decoded_output[start_index:]
+    
+    # Split the substring into lines
+    lines = substring.strip().split('\n')
+    
+    if not lines:
+        return None
+    
+    # Return the first non-empty line
+    for line in lines:
+        stripped_line = line.strip()
+        if stripped_line:
+            return stripped_line
+    
+    return None
+
+def analyze_llm_output(input_string, correct_arrangement, name_color_mapping, tokenizer, puzzle_pos=4):
     """
     Analyzes the LLM's output to categorize tokens and verify the correctness of the final answer.
 
@@ -10,6 +58,7 @@ def analyze_llm_output(input_string, correct_arrangement, name_color_mapping, to
     - correct_arrangement (Arrangement): The correct arrangement for verification.
     - name_color_mapping (NameColorMapping): The mapping from labels to actual names and colors.
     - tokenizer: The tokenizer to use for tokenizing the input string.
+    - puzzle_pos (int): The position of the LLM's puzzle in the input string (default: 4).
 
     Returns:
     - token_dict (dict): A dictionary mapping token indices to their categories.
@@ -18,11 +67,11 @@ def analyze_llm_output(input_string, correct_arrangement, name_color_mapping, to
 
     # Step 1: Identify all "Puzzle:" positions
     puzzle_matches = list(re.finditer(r'^Puzzle:', input_string, re.MULTILINE))
-    if len(puzzle_matches) < 4:
+    if len(puzzle_matches) < puzzle_pos:
         raise ValueError("The input string does not contain at least four 'Puzzle:' instances.")
 
     # The fourth "Puzzle:" marks the start of the LLM's puzzle
-    llm_puzzle_start = puzzle_matches[3].start()
+    llm_puzzle_start = puzzle_matches[puzzle_pos-1].start()
 
     # Extract the LLM's puzzle and everything after it
     llm_puzzle_and_after = input_string[llm_puzzle_start:]
