@@ -1,0 +1,97 @@
+The following are example puzzles. Your objective is to figure out where everyone is sitting, and what color shirts they are wearing.
+Note that the same clue can reference the same person multiple times.
+For instance, the clue "The person wearing red is not sitting to the right of Adam" could be satisfied by Adam wearing red.
+
+Puzzle:
+Andrew and Bethany are sitting in a row on 2 chairs. They are wearing shirts with colors emerald and turquoise. Each of them is wearing a different color.
+
+Clues:
+Andrew is not immediately to the left of the person wearing turquoise.
+Andrew is immediately to the left of Bethany.
+
+Solution:
+Applying clue: Andrew is not immediately to the left of the person wearing turquoise.
+This clue does not give us additional useful information right now.
+Applying clue: Andrew is immediately to the left of Bethany.
+Because Bethany is at one of positions left or right, Andrew must be in position left.
+Because Andrew is at position left, Bethany must be in position right.
+Andrew cannot be at position right because they are at position left.
+Position right must have Bethany because they're the only person left.
+Could not determine a unique arrangement yet. Iterating through clues again.
+Applying clue: Andrew is not immediately to the left of the person wearing turquoise.
+Because Andrew is at position left, the person wearing turquoise must be in position left.
+Bethany is wearing one of emerald or turquoise, and they are at position right which contains someone wearing emerald.
+Therefore, Bethany must be wearing emerald at position right.
+Emerald cannot be worn by someone at position left because it is worn by someone at position right.
+Position left must have someone wearing turquoise because it's the only color left.
+Emerald is worn by one of Andrew or Bethany, and it is at position right which contains Bethany.
+Therefore, position right must have Bethany wearing emerald.
+Applying clue: Andrew is immediately to the left of Bethany.
+This clue does not give us additional useful information right now.
+All positions have been determined.
+
+Final answer:
+Andrew (Color turquoise, position left), Bethany (Color emerald, position right)
+
+
+Puzzle:
+Aidan and Bradley are sitting in a row on 2 chairs. They are wearing shirts with colors orange and peach. Each of them is wearing a different color.
+
+Clues:
+The person wearing orange is not immediately to the left of the person wearing peach.
+Aidan is sitting on the far right.
+
+Solution:
+Applying clue: The person wearing orange is not immediately to the left of the person wearing peach.
+Because the person wearing peach is at one of positions left or right, the person wearing orange must be in position right.
+Because the person wearing orange is at position right, the person wearing peach must be in position left.
+Peach cannot be worn by someone at position right because it is worn by someone at position left.
+Position right must have someone wearing orange because it's the only color left.
+Applying clue: Aidan is sitting on the far right.
+Aidan must be at position right.
+Bradley cannot be at position right because they are at position left.
+Position right must have Aidan because they're the only person left.
+Bradley is wearing one of orange or peach, and they are at position left which contains someone wearing peach.
+Therefore, Bradley must be wearing peach at position left.
+Peach is worn by one of Aidan or Bradley, and it is at position left which contains Bradley.
+Therefore, position left must have Bradley wearing peach.
+Aidan is wearing one of orange or peach, and they are at position right which contains someone wearing orange.
+Therefore, Aidan must be wearing orange at position right.
+Orange is worn by one of Aidan or Bradley, and it is at position right which contains Aidan.
+Therefore, position right must have Aidan wearing orange.
+All positions have been determined.
+
+Final answer:
+Bradley (Color peach, position left), Aidan (Color orange, position right)
+
+
+Puzzle:
+Alice and Bella are sitting in a row on 2 chairs. They are wearing shirts with colors coral and lavender. Each of them is wearing a different color.
+
+Clues:
+Alice is not somewhere to the left of Bella.
+The person wearing lavender is not immediately to the left of Alice.
+
+Solution:
+Applying clue: Alice is not somewhere to the left of Bella.
+Because Bella is at one of positions left or right, Alice must be in position right.
+Because Alice is at position right, Bella must be in position left.
+Bella cannot be at position right because they are at position left.
+Position right must have Alice because they're the only person left.
+Applying clue: The person wearing lavender is not immediately to the left of Alice.
+Because Alice is at position right, the person wearing lavender must be in position right.
+Bella is wearing one of coral or lavender, and they are at position left which contains someone wearing coral.
+Therefore, Bella must be wearing coral at position left.
+Coral cannot be worn by someone at position right because it is worn by someone at position left.
+Position right must have someone wearing lavender because it's the only color left.
+Coral is worn by one of Alice or Bella, and it is at position left which contains Bella.
+Therefore, position left must have Bella wearing coral.
+Alice is wearing one of coral or lavender, and they are at position right which contains someone wearing lavender.
+Therefore, Alice must be wearing lavender at position right.
+Lavender is worn by one of Alice or Bella, and it is at position right which contains Alice.
+Therefore, position right must have Alice wearing lavender.
+All positions have been determined.
+
+Final answer:
+Bella (Color coral, position left), Alice (Color lavender, position right)
+"""
