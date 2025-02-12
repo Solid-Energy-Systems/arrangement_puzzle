@@ -9,6 +9,7 @@ setup(
     ],
     author='Adam Atanas',
     author_email='adam.atanas@ses.ai',
+    license="MIT",
     description='A generator for a particular type of word puzzle, for use in RL and activation studies of reasoning LLM agents.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
